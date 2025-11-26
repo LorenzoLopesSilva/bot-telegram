@@ -18,6 +18,10 @@ requests.post(
                 data={"chat_id": 8536678599, "text": "Codigo Rodando"}
             ).json()
 
+requests.post(
+                url=f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
+                data={"chat_id": 8536678599, "text": "Digite a data no formato mm/dd/aaaa: "}
+            ).json()
 
 while True:
 
@@ -28,11 +32,6 @@ while True:
 
     if mensagem_passada != mensagem_atual:
         mensagem_passada = mensagem_atual
-
-        requests.post(
-                url=f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
-                data={"chat_id": 8536678599, "text": "Digite a data: "}
-            ).json()
 
         print(updates["result"][-1]["message"]["text"])
 
@@ -50,12 +49,14 @@ while True:
                     dia_anterior = datetime.strptime(data, "%m%d%Y") - timedelta(1)
                     dia_anterior = datetime.strftime(dia_anterior, "%m%d%Y")
                     return cotar(dia_anterior)
+                
+            dia = str(updates["result"][-1]["message"]["text"])
             
-            cotacao = cotar(str(updates["result"][-1]["message"]["text"]))
+            cotacao = cotar(dia)
             
             requests.post(
             url=f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
-            data={"chat_id": 8536678599, "text": f"{cotacao}"}
+            data={"chat_id": 8536678599, "text": f"Cotação do dia {dia}: {cotacao}"}
         ).json()
 
         
