@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 import datetime
 from datetime import datetime, timedelta
-import calendar 
 
 
 load_dotenv(".env")
@@ -11,19 +10,25 @@ load_dotenv(".env")
 updates = requests.get(f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/getUpdates")
 updates = updates.json()
 
+id_conversa = updates["result"][-1]["message"]["chat"]["id"]
+
 mensagem_passada = updates["result"][-1]["update_id"]
 
 requests.post(
                 url=f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
-                data={"chat_id": 8536678599, "text": "Codigo Rodando"}
+                data={"chat_id": id_conversa, "text": "Seja bem vindo! Eu sou um bot que informa a cotação do dólar para uma data específica."}
             ).json()
 
 requests.post(
                 url=f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
-                data={"chat_id": 8536678599, "text": "Digite a data no formato mm/dd/aaaa: "}
+                data={"chat_id": id_conversa, "text": "Digite a data no formato mm/dd/aaaa: "}
             ).json()
 
 while True:
+
+
+
+    id_conversa = updates["result"][-1]["message"]["chat"]["id"]
 
     updates = requests.get(f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/getUpdates")
     updates = updates.json()
@@ -33,9 +38,22 @@ while True:
     if mensagem_passada != mensagem_atual:
         mensagem_passada = mensagem_atual
 
+        id_conversa = updates["result"][-1]["message"]["chat"]["id"]
+
+        if(updates["result"][-1]["message"]["text"] == "/start"):
+            requests.post(
+                url=f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
+                data={"chat_id": id_conversa, "text": "Seja bem vindo! Eu sou um bot que informa a cotação do dólar para uma data específica."}
+            ).json()
+
+            requests.post(
+                url=f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
+                data={"chat_id": id_conversa, "text": "Digite a data no formato mm/dd/aaaa: "}
+            ).json()
+            continue
+
         print(updates["result"][-1]["message"]["text"])
 
-        # if updates["result"][-1]["message"]["text"].lower() == "OI":
 
         try:
             #Contação
@@ -46,6 +64,8 @@ while True:
                 if res['value']: 
                     return res['value'][0]['cotacaoVenda']
                 else:
+                    data = data.replace("/", "")
+
                     dia_anterior = datetime.strptime(data, "%m%d%Y") - timedelta(1)
                     dia_anterior = datetime.strftime(dia_anterior, "%m%d%Y")
                     return cotar(dia_anterior)
@@ -56,14 +76,14 @@ while True:
             
             requests.post(
             url=f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
-            data={"chat_id": 8536678599, "text": f"Cotação do dia {dia}: {cotacao}"}
+            data={"chat_id": id_conversa, "text": f"Cotação do dia {dia}: {cotacao}"}
         ).json()
 
         
         except:
             requests.post(
                 url=f"https://api.telegram.org/bot{os.getenv('TELEGRAM_TOKEN')}/sendMessage",
-                data={"chat_id": 8536678599, "text": "Digite uma data valida"}
+                data={"chat_id": id_conversa, "text": "Digite uma data valida (mm/dd/aaaa)"}
             ).json()
 
 
